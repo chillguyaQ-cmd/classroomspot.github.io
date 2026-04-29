@@ -383,6 +383,7 @@
             { id: 'movies', name: 'Movies', icon: 'https://i.pinimg.com/736x/d9/fc/34/d9fc34e5e6a913aa290510384df855f4.jpg', src: 'movie.html', type: 'iframe' },
             { id: 'paint', name: 'Canvas', icon: 'https://i.pinimg.com/736x/39/67/4a/39674af13680be470e7d74af7640c341.jpg', type: 'paint' },
             { id: 'webblox', name: 'WebBlox', icon: 'https://i.pinimg.com/736x/33/ac/19/33ac1968aac6045b766d68acfbe96fe2.jpg', src: 'https://coldbrewofficial.github.io/WebBloxDemo/', type: 'iframe' },
+            { id: 'geometrydash', name: 'Geometry Dash', icon: 'https://tse2.mm.bing.net/th/id/OIP.dIeac1QkcUWR5X754oRoQAHaHa?pid=ImgDet&w=206&h=206&c=7&o=7&rm=3', src: 'geometrydash.html', type: 'iframe' },
             { id: 'settings', name: 'Settings', icon: 'https://i.pinimg.com/736x/47/07/58/470758d3a54275621d6cea1506449609.jpg', type: 'settings' }
         ];
 
@@ -990,7 +991,7 @@
             </div>`;
         }
         function initSettings() {}
-        function setWallpaper(url) {
+        function setWallpaper(url) { 
             clearLiveWallpaper();
             currentWallpaper = url;
             document.getElementById('desktop').style.backgroundImage = `url(${url})`;
