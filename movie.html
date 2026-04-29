@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>classroomspot web</title>
 
-<!-- !! idk im classroomspot 67 aura kid 67/ !! -->
+<!-- !! PATHS MATCH YOUR REPO ROOT - all uv files are at / not /uv/ !! -->
 <script src="/uv.bundle.js"></script>
 <script src="/uv.config.js"></script>
 <script src="/worker.js"></script>
@@ -162,10 +162,11 @@ body::before { content: ''; position: fixed; inset: 0; background: rgba(0,0,0,0.
 <div class="error-banner" id="errorBanner"></div>
 
 <script>
-// ── hiii 67 aura farm discord.gg/nikehub
+// ── Your UV files are all in the ROOT of your repo ──
+// sw file is uv.sw.js, baremux worker is worker.js at root
 const HOME_URL   = "https://classroomspot.github.io/movies.html";
-const SW_PATH    = "/uv.sw.js";     
-const SW_SCOPE   = "/uv/service/";    
+const SW_PATH    = "/uv.sw.js";       // your sw file is uv.sw.js at root
+const SW_SCOPE   = "/uv/service/";    // must match prefix in uv.config.js
 const WISP_URL   = "wss://wisp.rhw.one/";
 
 const ENGINES = {
@@ -355,7 +356,7 @@ urlInput.addEventListener("keydown", e => {
 });
 newtabBtn.onclick = () => createTab();
 
-// Snow idk
+// Snow
 (function(){
     const c = document.getElementById("snow");
     for (let i = 0; i < 80; i++) {
@@ -369,7 +370,7 @@ newtabBtn.onclick = () => createTab();
     }
 })();
 
-// ── BOOt 67
+// ── BOOT ─────────────────────────────────────────────────────
 (async () => {
     try {
         // Wait for the inline scripts (uv.bundle.js, uv.config.js) to define __uv$config
@@ -415,7 +416,7 @@ newtabBtn.onclick = () => createTab();
         setStatus("Error: " + err.message);
         showError(err.message);
         console.error("Boot error:", err);
-        createTab(); // still open tab so UI isn't stuck my dih
+        createTab(); // still open tab so UI isn't stuck
     }
 })();
 </script>
