@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xhtml="http://www.w3.org/1999/xhtml" width="100%" height="100%" viewBox="0 0 1920 1080">
+  <foreignObject id="fo" width="1920" height="1080" x="0" y="0">
+    <xhtml:html xmlns="http://www.w3.org/1999/xhtml" style="width:100%;height:100%;margin:0;padding:0;">
+    <xhtml:head>
+      <xhtml:style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
+        iframe { position: fixed; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
+      </xhtml:style>
+    </xhtml:head>
+    <xhtml:body>
+      <xhtml:iframe id="fm" src="about:blank" allow="fullscreen; autoplay"></xhtml:iframe>
+      <xhtml:script>
+      //<![CDATA[
+        (function() {
+          function size() {
+            var w = window.innerWidth, h = window.innerHeight;
+            var svg = document.querySelector('svg');
+            var fo  = document.querySelector('foreignObject');
+            if (svg) { svg.setAttribute('width', w); svg.setAttribute('height', h); svg.setAttribute('viewBox','0 0 '+w+' '+h); }
+            if (fo)  { fo.setAttribute('width', w);  fo.setAttribute('height', h); }
+          }
+          size();
+          window.addEventListener('resize', size);
+
+          const BASE = (function() {
+            var loc = window.location.href;
+            return loc.substring(0, loc.lastIndexOf('/') + 1);
+          })();
+
+          // Fetch any relative page and return a blob URL with base tag injected
+          async function toBlob(path) {
+            const url = /^https?:\/\//i.test(path) ? path : BASE + path;
+            const res = await fetch(url + (url.includes('?') ? '&' : '?') + 't=' + Date.now());
+            let text = await res.text();
+            const baseTag = '<base href="' + BASE + '">';
+            if (/<head[^>]*>/i.test(text)) {
+              text = text.replace(/(<head[^>]*>)/i, '$1' + baseTag);
+            } else {
+              text = baseTag + text;
+            }
+            const blob = new Blob([text], { type: 'text/html' });
+            return URL.createObjectURL(blob);
+          }
+
+          // After index.html loads, patch every inner iframe so src changes get blob-proxied
+          function patchInnerIframes(frameEl) {
+            try {
+              const idoc = frameEl.contentDocument || frameEl.contentWindow.document;
+              const iframes = idoc.querySelectorAll('iframe');
+              iframes.forEach(function(ifr) {
+                // Watch for src attribute changes via MutationObserver
+                const obs = new MutationObserver(function(mutations) {
+                  mutations.forEach(async function(m) {
+                    if (m.attributeName === 'src') {
+                      const src = ifr.getAttribute('src');
+                      if (src && src !== 'about:blank' && !/^blob:/i.test(src)) {
+                        const blobUrl = await toBlob(src);
+                        obs.disconnect();
+                        ifr.src = blobUrl;
+                        // Re-observe after set
+                        obs.observe(ifr, { attributes: true, attributeFilter: ['src'] });
+                      }
+                    }
+                  });
+                });
+                obs.observe(ifr, { attributes: true, attributeFilter: ['src'] });
+              });
+
+              // Also watch for any NEW iframes added dynamically
+              const bodyObs = new MutationObserver(function(mutations) {
+                mutations.forEach(function(m) {
+                  m.addedNodes.forEach(function(node) {
+                    if (node.tagName === 'IFRAME') {
+                      patchIframe(node);
+                    }
+                    if (node.querySelectorAll) {
+                      node.querySelectorAll('iframe').forEach(patchIframe);
+                    }
+                  });
+                });
+              });
+              if (idoc.body) bodyObs.observe(idoc.body, { childList: true, subtree: true });
+
+            } catch(e) {
+              // cross-origin, skip
+            }
+          }
+
+          function patchIframe(ifr) {
+            const obs = new MutationObserver(async function(mutations) {
+              for (const m of mutations) {
+                if (m.attributeName === 'src') {
+                  const src = ifr.getAttribute('src');
+                  if (src && src !== 'about:blank' && !/^blob:/i.test(src) && !/^https?:\/\//i.test(src)) {
+                    const blobUrl = await toBlob(src);
+                    obs.disconnect();
+                    ifr.src = blobUrl;
+                    obs.observe(ifr, { attributes: true, attributeFilter: ['src'] });
+                  }
+                }
+              }
+            });
+            obs.observe(ifr, { attributes: true, attributeFilter: ['src'] });
+          }
+
+          (async () => {
+            try {
+              const blobUrl = await toBlob('index.html');
+              const frame = document.getElementById('fm');
+              frame.src = blobUrl;
+              frame.addEventListener('load', function() {
+                patchInnerIframes(frame);
+              });
+            } catch(e) {
+              console.error('Loader error:', e);
+            }
+          })();
+        })();
+      //]]>
+      </xhtml:script>
+    </xhtml:body>
+    </xhtml:html>
+  </foreignObject>
+</svg>
