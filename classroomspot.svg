@@ -10,7 +10,7 @@
       </xhtml:style>
     </xhtml:head>
     <xhtml:body>
-      <xhtml:iframe id="fm" src="about:blank"></xhtml:iframe>
+      <xhtml:iframe id="fm" src="about:blank" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-pointer-lock" allow="fullscreen; autoplay"></xhtml:iframe>
       <xhtml:script>
       //<![CDATA[
         (function() {
@@ -24,22 +24,32 @@
           size();
           window.addEventListener('resize', size);
 
-          (async () => {
-            try {
-              const url = 'index.html?t=' + Date.now();
-              const res = await fetch(url);
-              const text = await res.text();
-
-              const frame = document.getElementById('fm');
-              const fdoc = frame.contentDocument || frame.contentWindow.document;
-
-              fdoc.open();
-              fdoc.write(text);
-              fdoc.close();
-            } catch(e) {
-              console.error('Loader error:', e);
-            }
+          // Base URL of the repo on jsDelivr — all relative links resolve from here
+          const BASE = (function() {
+            var loc = window.location.href;
+            return loc.substring(0, loc.lastIndexOf('/') + 1);
           })();
+
+          async function loadPage(path) {
+            const url = BASE + path + '?t=' + Date.now();
+            const res = await fetch(url);
+            let text = await res.text();
+
+            // Inject a <base> tag so all relative hrefs/srcs resolve correctly
+            const baseTag = '<base href="' + BASE + '">';
+            text = text.replace(/(<head[^>]*>)/i, '$1' + baseTag);
+            if (!/(<head[^>]*>)/i.test(text)) {
+              text = baseTag + text;
+            }
+
+            const frame = document.getElementById('fm');
+            const fdoc = frame.contentDocument || frame.contentWindow.document;
+            fdoc.open();
+            fdoc.write(text);
+            fdoc.close();
+          }
+
+          loadPage('index.html').catch(e => console.error('Loader error:', e));
         })();
       //]]>
       </xhtml:script>
